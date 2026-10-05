@@ -31,13 +31,24 @@
     </button>
   </header>
 
-  <nav class="fabs" aria-label="地図操作">
+  <nav class="fabs" id="fabs" aria-label="地図操作">
+    <div class="fab-group" id="fab-group">
     <button class="fab" id="btn-layers" title="地図の表現"><svg viewBox="0 0 24 24"><path d="M12 3 2 8.5 12 14l10-5.5L12 3Z M2 13l10 5.5L22 13 M2 17.5 12 23l10-5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>表現</span></button>
     <button class="fab" id="btn-3d" title="3D表示"><b>3D</b><span>立体</span></button>
     <button class="fab" id="btn-profile" title="断面図"><svg viewBox="0 0 24 24"><path d="M2 19 7 11l4 4 4-9 7 13Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>断面</span></button>
     <button class="fab" id="btn-sea" title="海面シミュレーション"><svg viewBox="0 0 24 24"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 20c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M12 3v7M9 7l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>海面</span></button>
+    </div>
+    <button class="fab fab-tools" id="btn-tools" title="ツール" aria-expanded="false"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2" fill="currentColor"/><circle cx="18" cy="6" r="2.2" fill="currentColor"/><circle cx="6" cy="18" r="2.2" fill="currentColor"/><circle cx="18" cy="18" r="2.2" fill="currentColor"/></svg><span>ツール</span><i class="fab-badge" hidden></i></button>
     <button class="fab" id="btn-locate" title="現在地"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3" stroke="currentColor" stroke-width="1.8"/></svg><span>現在地</span></button>
   </nav>
+
+  <div class="orbit" id="orbit" hidden>
+    <button class="orbit-reset" id="orbit-reset" title="真上から・北を上に">真上</button>
+    <div class="orbit-pad" id="orbit-pad" title="ドラッグで回転・傾き">
+      <span class="orbit-hint">回転・傾き</span>
+      <span class="orbit-knob"></span>
+    </div>
+  </div>
 
   <div class="legend" id="legend"></div>
   <div class="toast" id="toast" hidden></div>

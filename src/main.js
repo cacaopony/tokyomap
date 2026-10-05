@@ -159,6 +159,7 @@ let reliefTimer = 0;
 function refreshRelief() {
   setReliefSettings(S);
   updateLegend();
+  updateToolsBadge();
   clearTimeout(reliefTimer);
   reliefTimer = setTimeout(() => {
     reliefVersion++;
@@ -181,10 +182,13 @@ function applyLayerSettings() {
   map.setPaintProperty('hillshade', 'hillshade-exaggeration', S.shade);
   map.setPaintProperty('bg', 'background-color', S.palette === 'night' ? '#05060f' : '#dfe6ee');
   document.body.classList.toggle('night', S.palette === 'night');
+  updateToolsBadge();
 }
 
 function applyTerrain(animate = true) {
   $('#btn-3d').classList.toggle('on', S.terrain);
+  $('#orbit').hidden = !S.terrain;
+  updateToolsBadge();
   if (S.terrain) {
     map.setTerrain({ source: 'dem-3d', exaggeration: S.exag });
     if (animate && map.getPitch() < 30) map.easeTo({ pitch: 62, duration: 900 });
@@ -718,6 +722,7 @@ function startProfile(first = null) {
   profile.pts = first ? [first] : [];
   setProfileData(profile.pts);
   $('#btn-profile').classList.add('on');
+  updateToolsBadge();
   document.body.classList.add('picking');
   toast(first ? '終点をタップしてください' : '断面図：始点をタップしてください', 0);
 }
@@ -735,6 +740,7 @@ function clearProfile() {
   profileHover?.remove();
   profileHover = null;
   $('#btn-profile').classList.remove('on');
+  updateToolsBadge();
   document.body.classList.remove('picking');
   hideToast();
 }
@@ -800,9 +806,66 @@ $('#btn-3d').addEventListener('click', () => {
   S.terrain = !S.terrain;
   saveSettings();
   applyTerrain();
-  if (S.terrain) toast('2本指で傾け・回転できます（PCは右ドラッグ）');
+  if (S.terrain) {
+    toast(isWide()
+      ? '右下のパッドをドラッグで回転・傾き（地図の右ドラッグでも可）'
+      : '右下のパッドを1本指でドラッグ → 回転・傾き<br><span class="muted">2本指の上下スワイプでも傾けられます</span>', 4500);
+  }
 });
 $('#btn-locate').addEventListener('click', startLocate);
+
+// ---------------------------------------------------------------- ツールメニュー（スマホでは折りたたむ）
+
+const fabs = $('#fabs');
+function setToolsOpen(open) {
+  fabs.classList.toggle('open', open);
+  $('#btn-tools').setAttribute('aria-expanded', String(open));
+}
+$('#btn-tools').addEventListener('click', () => setToolsOpen(!fabs.classList.contains('open')));
+$('#fab-group').addEventListener('click', (e) => {
+  if (e.target.closest('.fab') && !isWide()) setToolsOpen(false);
+});
+map.on('movestart', () => setToolsOpen(false));
+
+// 折りたたみ中でも、使用中の機能があることがわかるように
+function updateToolsBadge() {
+  const active = S.terrain || S.sea > 0 || S.hist !== 'none' || profile.active;
+  $('#btn-tools .fab-badge').hidden = !active;
+}
+
+// ---------------------------------------------------------------- 回転・傾きパッド（3D表示中）
+
+const orbitPad = $('#orbit-pad');
+const orbitKnob = orbitPad.querySelector('.orbit-knob');
+let orbitDrag = null;
+
+orbitPad.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  orbitPad.setPointerCapture(e.pointerId);
+  orbitDrag = { x: e.clientX, y: e.clientY, bearing: map.getBearing(), pitch: map.getPitch() };
+  orbitPad.classList.add('dragging');
+});
+orbitPad.addEventListener('pointermove', (e) => {
+  if (!orbitDrag) return;
+  const dx = e.clientX - orbitDrag.x;
+  const dy = e.clientY - orbitDrag.y;
+  map.jumpTo({
+    bearing: orbitDrag.bearing - dx * 0.6,
+    pitch: Math.max(0, Math.min(80, orbitDrag.pitch - dy * 0.5)),
+  });
+  const r = 18;
+  const len = Math.hypot(dx, dy) || 1;
+  const k = Math.min(1, r / len);
+  orbitKnob.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+});
+const endOrbit = () => {
+  orbitDrag = null;
+  orbitPad.classList.remove('dragging');
+  orbitKnob.style.transform = '';
+};
+orbitPad.addEventListener('pointerup', endOrbit);
+orbitPad.addEventListener('pointercancel', endOrbit);
+$('#orbit-reset').addEventListener('click', () => map.easeTo({ bearing: 0, pitch: 0, duration: 700 }));
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     if (profile.active) clearProfile();

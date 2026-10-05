@@ -520,3 +520,131 @@ body.night .tl { text-shadow: 0 0 3px #000, 0 0 6px #000; color: #e6ecff; }
 .maplibregl-ctrl-bottom-right { margin-bottom: var(--safe-b); transition: opacity .25s; }
 .maplibregl-ctrl-group { border-radius: 12px !important; overflow: hidden; }
 .maplibregl-ctrl-attrib { font-size: 10px; }
+
+/* ------------------------------------------------------------ ツールメニュー */
+.fab-group { display: flex; flex-direction: column; gap: 8px; }
+.fab-tools { display: none; position: relative; }
+.fab-badge {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--ui-solid);
+}
+
+/* ------------------------------------------------------------ 回転・傾きパッド */
+.orbit {
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--safe-b) + 150px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 5;
+}
+.orbit-pad {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.06) 0 38%, transparent 39%),
+    var(--ui);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.orbit-pad::before, .orbit-pad::after {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,.18);
+  pointer-events: none;
+}
+.orbit-pad::after { inset: 44px 8px; border-radius: 0; border: none; border-top: 1px dashed rgba(255,255,255,.18); }
+.orbit-pad.dragging { cursor: grabbing; }
+.orbit-knob {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #ff8a4c, #e8467c);
+  box-shadow: 0 3px 10px rgba(0,0,0,.4), inset 0 0 0 2px rgba(255,255,255,.35);
+  transition: transform .2s ease-out;
+  pointer-events: none;
+}
+.orbit-pad.dragging .orbit-knob { transition: none; }
+.orbit-hint {
+  position: absolute;
+  bottom: 6px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: .05em;
+  pointer-events: none;
+}
+.orbit-reset {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--ui);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  font-size: 11.5px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+body.sheet-open .orbit { display: none; }
+
+/* ------------------------------------------------------------ スマホ（画面を広く使う） */
+@media (max-width: 819px) {
+  .topbar { top: calc(var(--safe-t) + 8px); left: 8px; right: 8px; }
+  .brand { padding: 6px 12px 6px 7px; gap: 8px; }
+  .brand-mark { width: 24px; height: 24px; }
+  .brand h1 { font-size: 15px; }
+  .brand p { display: none; }
+  .btn-search { height: 40px; padding: 0 13px; font-size: 13px; }
+
+  .fabs { right: 8px; top: calc(var(--safe-t) + 58px); gap: 7px; }
+  .fab { width: 46px; height: 46px; border-radius: 14px; }
+  .fab svg { width: 20px; height: 20px; }
+  .fab b { font-size: 14px; line-height: 20px; }
+  .fab span { font-size: 8.5px; }
+  .fab-tools { display: flex; order: -1; }
+  .fab-group {
+    order: 0;
+    display: none;
+    padding: 6px;
+    margin: 0 -6px;
+    border-radius: 18px;
+    background: rgba(14, 20, 36, .35);
+  }
+  .fabs.open .fab-group { display: flex; animation: drop .18s ease-out; }
+  .fabs.open .fab-tools { background: var(--ui-3); }
+  #btn-locate { order: 1; }
+
+  .legend { left: 8px; bottom: calc(var(--safe-b) + 8px); width: 150px; padding: 6px 9px 5px; border-radius: 11px; }
+  .legend-title { font-size: 9.5px; margin-bottom: 4px; }
+  .legend-bar { height: 7px; }
+  .legend-ticks { font-size: 9px; }
+
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl-group,
+  .maplibregl-ctrl-bottom-right .maplibregl-ctrl-scale { display: none; }
+  .orbit { right: 8px; bottom: calc(var(--safe-b) + 50px); }
+  .orbit-pad { width: 84px; height: 84px; }
+  .orbit-pad::after { inset: 40px 8px; }
+
+  .spot-dot { width: 24px; height: 24px; font-size: 12px; border-width: 2px; }
+  .toast { top: calc(var(--safe-t) + 58px); max-width: calc(100vw - 80px); font-size: 12.5px; }
+}
+@keyframes drop { from { opacity: 0; transform: translateY(-6px); } }
