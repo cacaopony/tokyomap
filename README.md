@@ -1,5 +1,7 @@
 # 東京凸凹散歩（Tokyo Relief Walk）
 
+**公開ページ：https://cacaopony.github.io/tokyomap/**
+
 東京23区を歩くときに、その土地の **高低差（台地・谷・低地）** と **歴史** を一緒に楽しめる地図 Web アプリ。
 
 ## 起動
