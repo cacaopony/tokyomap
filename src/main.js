@@ -133,6 +133,11 @@ function buildStyle() {
 
 const isWide = () => window.matchMedia('(min-width: 820px)').matches;
 
+// スマホは GPU メモリが少なく、深く傾けると遠方タイルが一気に増えて
+// WebGL コンテキストが失われ画面が真っ白になる。傾きと解像度を抑える。
+const isTouch = window.matchMedia('(pointer: coarse)').matches;
+const MAX_PITCH = isTouch ? 68 : 80;
+
 const map = new MapLibreMap({
   container: 'map',
   style: buildStyle(),
@@ -140,7 +145,9 @@ const map = new MapLibreMap({
   zoom: isWide() ? 13 : 12.4,
   minZoom: 9.5,
   maxZoom: 18,
-  maxPitch: 80,
+  maxPitch: MAX_PITCH,
+  pixelRatio: Math.min(window.devicePixelRatio || 1, isTouch ? 2 : 3),
+  maxTileCacheSize: isTouch ? 120 : null,
   maxBounds: [[139.3, 35.42], [140.15, 35.95]],
   hash: 'map',
   attributionControl: { compact: true },
@@ -148,6 +155,20 @@ const map = new MapLibreMap({
 if (import.meta.env.DEV) window.__map = map;
 map.addControl(new NavigationControl({ visualizePitch: true }), 'bottom-right');
 map.addControl(new ScaleControl({ maxWidth: 110 }), 'bottom-right');
+// それでも WebGL が失われたら、傾きを浅くして再読み込みし復帰する
+map.getCanvas().addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  setTimeout(() => {
+    if (!map.painter?.context?.gl?.isContextLost?.()) return;
+    const m = location.hash.match(/map=([^&]+)/);
+    if (m) {
+      const v = m[1].split('/');
+      if (v.length >= 5) v[4] = String(Math.min(Number(v[4]) || 0, 45));
+      history.replaceState(null, '', location.hash.replace(m[1], v.join('/')));
+    }
+    location.reload();
+  }, 1500);
+});
 map.on('error', (e) => {
   if (e?.error?.status === 404) return; // 範囲外のタイルは無視
   console.warn(e?.error || e);
@@ -851,7 +872,7 @@ orbitPad.addEventListener('pointermove', (e) => {
   const dy = e.clientY - orbitDrag.y;
   map.jumpTo({
     bearing: orbitDrag.bearing - dx * 0.6,
-    pitch: Math.max(0, Math.min(80, orbitDrag.pitch - dy * 0.5)),
+    pitch: Math.max(0, Math.min(MAX_PITCH, orbitDrag.pitch - dy * 0.5)),
   });
   const r = 18;
   const len = Math.hypot(dx, dy) || 1;
